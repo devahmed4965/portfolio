@@ -1,0 +1,493 @@
+{% load static i18n mathfilters custom_filters %}
+
+<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE|default:"en" }}" dir="{% if LANGUAGE_CODE == 'ar' %}rtl{% else %}ltr{% endif %}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{% block meta_description %}{% trans "الملف الشخصي لأحمد مكرم الصعيدي، طالب علوم ومطور ويب وفويس أوفر." %}{% endblock %}">
+
+  <title>{% if profile %}{{ profile.user.get_full_name|default:profile.user.username }}{% else %}{% trans "ملفي الشخصي" %}{% endif %}</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'portfolio/css/style.css' %}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  {% comment %}
+  Placeholder for dynamic theme overrides from DB (ThemeSettings model)
+  Ensure CSS variables here match those used in style.css
+  {% if theme_settings %}
+  <style>
+    :root {
+      /* Light Theme Overrides */
+      --light-purple-primary: {{ theme_settings.light_primary_color|default:'#6a1b9a' }};
+      --light-bg-color: {{ theme_settings.light_background_color|default:'#f8f9fa' }};
+      --light-text-color: {{ theme_settings.light_text_color|default:'#212529' }};
+      --light-card-bg: {{ theme_settings.light_card_bg|default:'#ffffff' }};
+      /* ... other light variables ... */
+
+      /* Dark Theme Overrides */
+      --dark-purple-primary: {{ theme_settings.dark_primary_color|default:'#ab47bc' }};
+      --dark-bg-color: {{ theme_settings.dark_background_color|default:'#121212' }};
+      --dark-text-color: {{ theme_settings.dark_text_color|default:'#e0e0e0' }};
+      --dark-card-bg: {{ theme_settings.dark_card_bg|default:'#1e1e1e' }};
+       /* ... other dark variables ... */
+    }
+  </style>
+  {% endif %}
+  {% endcomment %}
+
+</head>
+<body class="bg-body-tertiary light-theme"> {# JS handles theme toggling #}
+
+  <nav class="navbar navbar-expand-lg sticky-top shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#home" style="color: var(--purple-primary);">
+        <i class="fas fa-user-circle me-2"></i>
+        <span>{% if profile %}{{ profile.user.get_full_name|default:profile.user.username }}{% else %}{% trans "ملفي الشخصي" %}{% endif %}</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav {% if LANGUAGE_CODE == 'ar' %}me-auto{% else %}ms-auto{% endif %} mb-2 mb-lg-0"> {# Adjust margin based on language direction #}
+          <li class="nav-item"><a class="nav-link active" aria-current="page" href="#home">{% trans "الرئيسية" %}</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">{% trans "عني" %}</a></li>
+          <li class="nav-item"><a class="nav-link" href="#skills">{% trans "مهاراتي" %}</a></li>
+          <li class="nav-item"><a class="nav-link" href="#my-projects">{% trans "مشاريعي" %}</a></li>
+          <li class="nav-item"><a class="nav-link" href="#experience">{% trans "خبراتي" %}</a></li>
+          <li class="nav-item"><a class="nav-link" href="#certificates">{% trans "شهاداتي" %}</a></li>
+          {% comment %} <li class="nav-item"><a class="nav-link" href="#video-projects">{% trans "مشاريع الفيديو" %}</a></li> {% endcomment %}
+          <li class="nav-item"><a class="nav-link" href="#podcasts">{% trans "أعمالي" %}</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">{% trans "تواصل معي" %}</a></li>
+        </ul>
+        <div class="d-flex align-items-center {% if LANGUAGE_CODE == 'ar' %}me-lg-3{% else %}ms-lg-3{% endif %} mt-2 mt-lg-0"> {# Adjust margin based on language direction #}
+          {# Theme Toggle Button #}
+          <button id="theme-toggle" class="btn btn-outline-secondary btn-sm me-2" aria-label="Toggle theme">
+             <i class="fas fa-moon"></i>
+          </button>
+
+          {# START: Language Switcher #}
+          <div class="dropdown me-2">
+              <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fas fa-globe me-1"></i> {% get_language_info for LANGUAGE_CODE as LANG_INFO %}{{ LANG_INFO.code|upper }}
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown" style="min-width: auto;">
+                  {% get_available_languages as LANGUAGES %}
+                  {% get_language_info_list for LANGUAGES as languages_info %}
+                  {% for lang_info in languages_info %}
+                      {% if lang_info.code != LANGUAGE_CODE %}
+                          <li>
+                              <form action="{% url 'set_language' %}" method="post" class="d-inline">
+                                  {% csrf_token %}
+                                  {# Attempt to get the path without language prefix if exists #}
+                                  {% get_language_info for LANGUAGE_CODE as current_lang_info %}
+                                  {% if request.path|startswith:current_lang_info.code|add:"/" %}
+                                      <input name="next" type="hidden" value="/{{ request.get_full_path|slice:4 }}">
+                                  {% else %}
+                                      <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                  {% endif %}
+                                  <input name="language" type="hidden" value="{{ lang_info.code }}">
+                                  <button type="submit" class="dropdown-item">
+                                      {{ lang_info.name_local }} ({{ lang_info.code|upper }})
+                                  </button>
+                              </form>
+                          </li>
+                      {% endif %}
+                  {% endfor %}
+              </ul>
+          </div>
+          {# END: Language Switcher #}
+
+          {# Admin Login/Logout Buttons #}
+          {% if user.is_authenticated and user.is_staff %}
+              <a href="{% url 'admin:index' %}" class="btn btn-outline-success btn-sm me-2" title="{% trans 'لوحة التحكم' %}"><i class="fas fa-cogs"></i></a>
+              <form action="{% url 'admin:logout' %}" method="post" style="display: inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-danger btn-sm" title="{% trans 'تسجيل الخروج' %}"><i class="fas fa-sign-out-alt"></i></button>
+              </form>
+          {% else %}
+               <a href="{% url 'admin:login' %}?next={{ request.path }}" class="btn btn-outline-primary btn-sm" title="{% trans 'تسجيل دخول الأدمن' %}"><i class="fas fa-sign-in-alt"></i></a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  {# --- Hero Section --- #}
+  <section id="home" class="d-flex align-items-center min-vh-100 text-center {% if LANGUAGE_CODE == 'ar' %}text-lg-end{% else %}text-lg-start{% endif %} position-relative" style="color: #fff;" data-aos="fade-up">
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('{% static "portfolio/images/hero-background.jpg" %}') no-repeat center center; background-size: cover; z-index: -1;"></div>
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: -1;"></div>
+    <div class="container" style="position: relative; z-index: 1;">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <h1 class="display-3 fw-bold mb-3">{% trans "أهلاً بك في ملفي الشخصي!" %}</h1>
+          <h2 class="lead mb-4 fs-4" id="hero-subtitle"
+              data-text-ar="{% if profile.job_title %}{{ profile.job_title }}{% else %}{% trans "مطور ويب | مصمم جرافيك | كاتب محتوى" %}{% endif %}"
+              data-text-en="{% if profile.job_title_en %}{{ profile.job_title_en }}{% else %}Web Developer | Graphic Designer | Content Creator{% endif %}">
+              {% if profile.job_title %}{{ profile.job_title }}{% else %}{% trans "مطور ويب | مصمم جرافيك | كاتب محتوى" %}{% endif %}
+          </h2>
+          <p class="mb-4 fs-5">{% if profile.bio %}{{ profile.bio|truncatewords:25 }}{% else %}{% trans "هنا يمكنك استعراض مهاراتي، مشاريعي، وخبراتي. يسعدني تواصلك!" %}{% endif %}</p>
+          <a href="#contact" class="btn btn-lg {% if LANGUAGE_CODE == 'ar' %}ms-2{% else %}me-2{% endif %} mb-2 mb-lg-0" style="background-color: var(--purple-primary); color: white;">{% trans "تواصل معي" %}</a>
+          <a href="#my-projects" class="btn btn-outline-light btn-lg mb-2 mb-lg-0">{% trans "شاهد أعمالي" %}</a>
+        </div>
+        <div class="col-lg-4 text-center d-none d-lg-block">
+          {% if profile.profile_picture %}
+              <img src="{{ profile.profile_picture.url }}" class="img-fluid rounded-circle shadow-lg" alt="{% trans 'صورتي الشخصية' %}" style="border: 5px solid var(--purple-light, #ddd);">
+          {% else %}
+              <img src="{% static 'portfolio/images/ahmed.png' %}" class="img-fluid rounded-circle shadow-lg" alt="{% trans 'صورة شخصية افتراضية' %}" style="border: 5px solid var(--purple-light, #ddd);">
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# --- About Section --- #}
+  <section id="about" class="py-5" data-aos="fade-up">
+    <div class="container text-center">
+      <h2 class="mb-5">
+          {% if about_section.title %}
+               {{ about_section.title }}
+          {% else %}
+               {% trans "نبذة عني" %}
+          {% endif %}
+      </h2>
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          {% if about_section %}
+             <div class="section-content">{{ about_section.content|safe|linebreaks }}</div>
+             {% if about_section.cv_url or profile.cv_url %}
+             <a href="{{ about_section.cv_url|default:profile.cv_url }}" target="_blank" class="btn btn-outline-primary mt-4">
+               <i class="fas fa-download {% if LANGUAGE_CODE == 'ar' %}ms-2{% else %}me-2{% endif %}"></i>{% trans "تحميل السيرة الذاتية" %}
+             </a>
+             {% endif %}
+          {% else %}
+              <h3 class="mb-4">{% trans "مزيج من العلم والتكنولوجيا" %}</h3>
+              <p>{% blocktrans %}أنا أحمد مكرم الصعيدي، طالب في الفرقة الثالثة بكلية العلوم بجامعة دمنهور، شغوف بتطوير الويب وتطبيق أحدث التقنيات لإحداث تغيير ملموس.{% endblocktrans %}</p>
+              <p class="mt-4">{% blocktrans %}أعمل في شركة "Aliens Express" وأمارس عمل الفويس أوفر، مما يمنحني خبرة متنوعة ومتكاملة.{% endblocktrans %}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# --- Skills Section --- #}
+  <section id="skills" class="py-5" style="background-color: var(--card-bg);" data-aos="fade-up">
+    <div class="container">
+      <h2 class="text-center mb-5">{% trans "مهاراتي التقنية" %}</h2>
+      <div class="row text-center justify-content-center">
+         {% for skill in skills %}
+         <div class="col-md-3 col-lg-2 col-6 mb-4" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|mul:50 }}">
+            <div class="skill-item p-3 border rounded shadow-sm h-100 d-flex flex-column justify-content-center align-items-center">
+               {% if skill.icon_class %}
+                  <i class="{{ skill.icon_class }} fa-3x mb-2" style="color: {{ skill.color|default:'var(--purple-primary)' }};"></i>
+               {% elif skill.icon_image %}
+                   <img src="{{ skill.icon_image.url }}" alt="{{ skill.name }}" height="48" class="mb-2">
+               {% else %}
+                   <i class="fas fa-code fa-3x mb-2" style="color: var(--purple-primary);"></i>
+               {% endif %}
+               <h5 class="mt-2">{{ skill.name }}</h5>
+            </div>
+         </div>
+         {% empty %}
+           <p>{% trans "لا توجد مهارات لعرضها حالياً." %}</p>
+         {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  {# --- Video Projects Section --- #}
+  {% if video_projects %}
+  <section id="video-projects" class="py-5" data-aos="fade-up">
+    <div class="container">
+      <h2 class="text-center mb-5">{% trans "مشاريعي المميزة (فيديو)" %}</h2>
+      <div class="row">
+        {% for project in video_projects %}
+        <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|mul:100 }}">
+          <div class="card h-100 shadow">
+            <div class="ratio ratio-16x9 bg-dark">
+              {% if project.video_file %}
+              <video controls {% if project.poster_image %}poster="{{ project.poster_image.url }}"{% endif %} preload="metadata" style="width: 100%; height: 100%;">
+                <source src="{{ project.video_file.url }}" type="{{ project.get_video_mimetype }}">
+                {% trans "عذراً، المتصفح لا يدعم عرض الفيديو." %}
+              </video>
+              {% elif project.poster_image %}
+                   <img src="{{ project.poster_image.url }}" alt="{% blocktrans with title=project.title %}بوستر مشروع {{ title }}{% endblocktrans %}" style="object-fit: cover; width: 100%; height: 100%;">
+              {% else %}
+                   <div class="d-flex justify-content-center align-items-center text-muted" style="width:100%; height:100%; background-color: #eee;">
+                       <span>{% trans "لا يوجد فيديو أو صورة" %}</span>
+                   </div>
+              {% endif %}
+            </div>
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{ project.title }}</h5>
+              <p class="card-text flex-grow-1">{{ project.description|linebreaksbr }}</p>
+              {% if project.technologies_list %}
+              <div class="mb-3">
+                   {% for tech_name in project.technologies_list %}
+                       <span class="badge bg-secondary {% if LANGUAGE_CODE == 'ar' %}ms-1{% else %}me-1{% endif %}">{{ tech_name }}</span>
+                   {% endfor %}
+              </div>
+              {% endif %}
+              {% if project.link %}
+              <a href="{{ project.link }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary mt-auto">
+                <i class="fas fa-link {% if LANGUAGE_CODE == 'ar' %}ms-1{% else %}me-1{% endif %}"></i>{% trans "رابط المشروع" %}
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% empty %}
+          <p class="text-center">{% trans "لا توجد مشاريع فيديو لعرضها حالياً." %}</p>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {# --- My Projects Section (General) --- #}
+  {% if projects %}
+  <section id="my-projects" class="py-5" style="background-color: var(--card-bg);" data-aos="fade-up">
+    <div class="container">
+      <h2 class="text-center mb-5">{% trans "مشاريعي" %}</h2>
+      <div class="row">
+        {% for proj in projects %}
+        <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|mul:100 }}">
+          <div class="card h-100 shadow">
+            {% if proj.image %}
+            <img src="{{ proj.image.url }}" class="card-img-top" alt="{{ proj.title }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+            <div class="d-flex justify-content-center align-items-center text-muted" style="width:100%; height:200px; background-color: #eee;">
+              <span>{% trans "لا توجد صورة" %}</span>
+            </div>
+            {% endif %}
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{ proj.title }}</h5>
+              <p class="card-text flex-grow-1">{{ proj.description|linebreaksbr }}</p>
+              {% if proj.technologies %}
+              <div class="mb-3">
+                {# Assuming a custom filter 'split_by' exists or technologies is already a list #}
+                {% for tech in proj.technologies_list|default:proj.technologies|split_by:"," %}
+                    <span class="badge bg-secondary {% if LANGUAGE_CODE == 'ar' %}ms-1{% else %}me-1{% endif %}">{{ tech|trim }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+              {% if proj.link %}
+              <a href="{{ proj.link }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary mt-auto">
+                <i class="fas fa-link {% if LANGUAGE_CODE == 'ar' %}ms-1{% else %}me-1{% endif %}"></i>{% trans "رابط المشروع" %}
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% empty %}
+          <p class="text-center">{% trans "لا توجد مشاريع لعرضها حالياً." %}</p>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {# --- Experience Section --- #}
+  <section id="experience" class="py-5" data-aos="fade-up">
+    <div class="container">
+     <h2 class="text-center mb-5">{% trans "خبراتي العملية والتعليمية" %}</h2>
+     <div class="row justify-content-center">
+       <div class="col-md-10 col-lg-8">
+         <div class="timeline">
+           {% for exp in experiences %}
+           <div class="timeline-item {% if LANGUAGE_CODE == 'ar' %}{% if forloop.counter|divisibleby:2 %}left{% else %}right{% endif %}{% else %}{% if forloop.counter|divisibleby:2 %}right{% else %}left{% endif %}{% endif %}" data-aos="{% if LANGUAGE_CODE == 'ar' %}{% if forloop.counter|divisibleby:2 %}fade-right{% else %}fade-left{% endif %}{% else %}{% if forloop.counter|divisibleby:2 %}fade-left{% else %}fade-right{% endif %}{% endif %}">
+              <div class="timeline-icon">
+                 <i class="fas {% if exp.is_education %}fa-graduation-cap{% else %}fa-briefcase{% endif %}"></i>
+              </div>
+              <div class="timeline-content">
+                 <span class="date small text-muted">
+                    {{ exp.start_date|date:"F Y" }} - {% if exp.end_date %}{{ exp.end_date|date:"F Y" }}{% else %}{% trans "حتى الآن" %}{% endif %}
+                 </span>
+                 <h5 class="mt-2">{{ exp.title }}</h5>
+                 <p class="text-muted fw-bold">{{ exp.company_or_institution }}</p>
+                 {% if exp.description %}<p>{{ exp.description|linebreaksbr }}</p>{% endif %}
+              </div>
+           </div>
+           {% empty %}
+              <p class="text-center">{% trans "لا توجد خبرات لعرضها حالياً." %}</p>
+           {% endfor %}
+         </div>
+       </div>
+     </div>
+    </div>
+  </section>
+
+  {# --- Certificates Section --- #}
+  <section id="certificates" class="py-5" style="background-color: var(--card-bg);" data-aos="fade-up">
+  <div class="container">
+   <h2 class="text-center mb-5">{% trans "شهاداتي" %}</h2>
+   <div class="row justify-content-center">
+     {% for cert in certificates %}
+     <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|mul:100 }}">
+       <div class="card h-100 shadow-sm">
+         {% if cert.image %}
+         <img src="{{ cert.image.url }}" class="card-img-top" alt="{{ cert.title }}" style="height: 200px; object-fit: contain;">
+         {% else %}
+         <div class="d-flex justify-content-center align-items-center bg-light text-muted" style="height: 200px;">{% trans "لا توجد صورة" %}</div>
+         {% endif %}
+         <div class="card-body d-flex flex-column">
+           <h5 class="card-title">{{ cert.title }}</h5>
+           {% if cert.issuing_organization %}
+             <p class="card-text text-muted">{{ cert.issuing_organization }}</p>
+           {% endif %}
+           {% if cert.date_issued %}
+             <small class="text-muted mb-2">{% trans "تاريخ الإصدار:" %} {{ cert.date_issued|date:"Y-m-d" }}</small>
+           {% endif %}
+           {% if cert.link %}
+           <a href="{{ cert.link }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary mt-auto">
+             <i class="fas fa-eye {% if LANGUAGE_CODE == 'ar' %}ms-1{% else %}me-1{% endif %}"></i>{% trans "عرض/تحقق" %}
+           </a>
+           {% endif %}
+         </div>
+       </div>
+     </div>
+     {% empty %}
+       <p class="text-center">{% trans "لا توجد شهادات لعرضها حالياً." %}</p>
+     {% endfor %}
+   </div>
+  </div>
+</section>
+
+  {# --- Podcast Section --- #}
+  {% if podcast_episodes %}
+  <section id="podcasts" class="py-5" data-aos="fade-up">
+    <div class="container">
+      <h2 class="text-center mb-5">{% trans "أعمالي (البودكاست)" %}</h2>
+      <div class="row justify-content-center">
+        {% for episode in podcast_episodes %}
+        <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|mul:100 }}">
+          <div class="card h-100 shadow-sm">
+            {% if episode.cover_image %}
+            <img src="{{ episode.cover_image.url }}" class="card-img-top" alt="{% blocktrans with title=episode.title %}غلاف {{ title }}{% endblocktrans %}" style="height: 200px; object-fit: cover;">
+            {% else %}
+             <div class="d-flex justify-content-center align-items-center bg-light text-muted" style="height: 200px;">{% trans "لا يوجد غلاف" %}</div>
+            {% endif %}
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{ episode.title }}</h5>
+              {% if episode.description %}
+              <p class="card-text flex-grow-1">{{ episode.description|truncatewords:20|linebreaksbr }}</p>
+              {% endif %}
+              {% if episode.audio_file %}
+              <audio controls class="w-100 mt-auto" preload="metadata">
+                <source src="{{ episode.audio_file.url }}" type="{{ episode.get_audio_mimetype }}">
+                {% trans "المتصفح لا يدعم عنصر الصوت." %}
+              </audio>
+              {% endif %}
+              {% if episode.publication_date %}
+                    <small class="text-muted mt-2">{% trans "تاريخ النشر:" %} {{ episode.publication_date|date:"Y-m-d" }}</small>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% empty %}
+         <p class="text-center">{% trans "لا يوجد بودكاست لعرضه حالياً." %}</p>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {# --- Contact Section --- #}
+  <section id="contact" class="py-5" style="background-color: var(--card-bg);" data-aos="fade-up">
+    <div class="container">
+      <h2 class="text-center mb-5">{% trans "تواصل معي" %}</h2>
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <form id="contact-form" action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST"> {# <-- Remember to replace YOUR_FORMSPREE_ID #}
+              <div id="form-status" class="mb-3 text-center" role="alert"></div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="form_name" class="form-label">{% trans "الاسم" %} *</label>
+                <input id="form_name" type="text" name="name" class="form-control" placeholder="{% trans 'اسمك الكامل' %}" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="form_email" class="form-label">{% trans "البريد الإلكتروني" %} *</label>
+                <input id="form_email" type="email" name="email" class="form-control" placeholder="{% trans 'example@domain.com' %}" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="form_message" class="form-label">{% trans "الرسالة" %} *</label>
+              <textarea id="form_message" name="message" class="form-control" placeholder="{% trans 'اكتب رسالتك هنا...' %}" rows="4" required></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="form-label d-block">{% trans "تقييم مبدئي:" %} *</label>
+                <div class="rating">
+                    <input type="radio" name="rating" id="rating-5" value="5" required><label for="rating-5" title="{% trans '5 نجوم' %}"><i class="fas fa-star"></i></label>
+                    <input type="radio" name="rating" id="rating-4" value="4" required><label for="rating-4" title="{% trans '4 نجوم' %}"><i class="fas fa-star"></i></label>
+                    <input type="radio" name="rating" id="rating-3" value="3" required><label for="rating-3" title="{% trans '3 نجوم' %}"><i class="fas fa-star"></i></label>
+                    <input type="radio" name="rating" id="rating-2" value="2" required><label for="rating-2" title="{% trans 'نجمتان' %}"><i class="fas fa-star"></i></label>
+                    <input type="radio" name="rating" id="rating-1" value="1" required><label for="rating-1" title="{% trans 'نجمة واحدة' %}"><i class="fas fa-star"></i></label>
+                </div>
+            </div>
+            <div class="text-center">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane {% if LANGUAGE_CODE == 'ar' %}ms-2{% else %}me-2{% endif %}"></i>{% trans "إرسال الرسالة" %}
+              </button>
+            </div>
+          </form>
+          <div class="text-center mt-5">
+            <p class="fw-bold">{% trans "أو تواصل مباشرة عبر:" %}</p>
+            {# Removed old hardcoded links, will rely on footer links #}
+            {% if profile.contact_email %}
+             <a href="mailto:{{ profile.contact_email }}" class="text-decoration-none {% if LANGUAGE_CODE == 'ar' %}ms-3{% else %}me-3{% endif %} fs-4" title="{% trans 'البريد الإلكتروني' %}"><i class="fas fa-envelope"></i></a>
+            {% endif %}
+            {# Maybe keep phone if available in profile? #}
+            {# {% if profile.phone_number %}
+             <a href="tel:{{ profile.phone_number }}" class="text-decoration-none me-3 fs-4" title="{% trans 'الهاتف' %}"><i class="fas fa-phone"></i></a>
+            {% endif %} #}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# --- Footer --- #}
+  <footer class="py-4 custom-footer" data-aos="fade-up">
+    <div class="container text-center">
+        {# START: Added Social Links Section #}
+        <div class="social-links mb-3">
+            {% if social_links %}
+                 {% for link in social_links %}
+                    <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none mx-2 fs-4 social-link-item" title="{{ link.get_platform_display }}">
+                         {% if link.icon_class %}
+                             <i class="{{ link.icon_class }}"></i> {# Use specified icon class #}
+                         {% else %}
+                             {# Fallback icon if no class is provided in admin #}
+                             <i class="fas fa-link"></i>
+                         {% endif %}
+                    </a>
+                 {% endfor %}
+            {% endif %}
+        </div>
+        {# END: Added Social Links Section #}
+
+      <p class="mb-0">&copy; {% now "Y" %} {{ site_owner_name|default:profile.user.get_full_name|default:_("Ahmed Makram") }}. {% trans "جميع الحقوق محفوظة." %}</p>
+    </div>
+  </footer>
+
+  {# --- Scripts --- #}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  {% if USE_GSAP %} {# Check if you have a setting 'USE_GSAP' or load it directly #}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+  {# If using ScrollTrigger, load it too #}
+  {# <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/ScrollTrigger.min.js"></script> #}
+  {% endif %}
+  <script src="{% static 'portfolio/js/script.js' %}"></script>
+</body>
+</html>

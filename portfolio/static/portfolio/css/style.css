@@ -1,0 +1,639 @@
+/* استيراد الخطوط */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+
+/* المتغيرات العامة */
+:root {
+  --font-primary: 'Cairo', sans-serif;
+  --purple-primary: #6a0dad;
+  --purple-light: #a678e3;
+  --purple-dark: #4b0082;
+  --purple-primary-rgb: 106, 13, 173;
+}
+
+/* الثيم الفاتح */
+body.light-theme {
+  --bg-color: #f8f9fa;
+  --text-color: #212529;
+  --card-bg: #ffffff;
+  --navbar-bg: var(--purple-primary);
+  --footer-bg: var(--purple-dark);
+  --footer-text: #f0f0f0;
+  --border-color: #dee2e6;
+  --link-color: var(--purple-dark);
+  --link-hover-color: var(--purple-light);
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --audio-bg: #f0f0f0;
+  --audio-border: #e0e0e0;
+  --timeline-line: var(--border-color);
+  --timeline-icon-bg: var(--purple-primary);
+  --timeline-icon-border: var(--bg-color);
+}
+
+/* الثيم الداكن */
+body.dark-theme {
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
+  --card-bg: #1e1e1e;
+  --navbar-bg: var(--purple-dark);
+  --footer-bg: #111111;
+  --footer-text: #cccccc;
+  --border-color: #444444;
+  --link-color: var(--purple-light);
+  --link-hover-color: var(--purple-primary);
+  --shadow-color: rgba(255, 255, 255, 0.08);
+  --audio-bg: #2a2a2a;
+  --audio-border: #383838;
+  --timeline-line: var(--border-color);
+  --timeline-icon-bg: var(--purple-primary);
+  --timeline-icon-border: var(--bg-color);
+}
+
+/* القواعد العامة */
+body {
+  font-family: var(--font-primary);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+main {
+  flex-grow: 1;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--link-hover-color);
+}
+
+section {
+  padding: 4rem 1rem;
+}
+
+/* الظلال */
+.shadow-sm { 
+  box-shadow: 0 .125rem .25rem var(--shadow-color) !important; 
+}
+.shadow { 
+  box-shadow: 0 .5rem 1rem var(--shadow-color) !important; 
+}
+.shadow-lg { 
+  box-shadow: 0 1rem 3rem var(--shadow-color) !important; 
+}
+
+/* تنسيق شريط التنقل */
+.navbar {
+  background-color: var(--navbar-bg) !important;
+  transition: background-color 0.3s ease;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link {
+  color: rgba(255, 255, 255, 0.85) !important;
+  transition: color 0.2s ease;
+}
+
+.navbar .nav-link.active {
+  font-weight: bold;
+  color: rgba(255, 255, 255, 1) !important;
+}
+
+.navbar .nav-link:hover {
+  color: rgba(255, 255, 255, 1) !important;
+}
+
+.navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255,255,255,0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/* قسم البداية (Hero) */
+#home {
+  position: relative;
+}
+
+#home img.rounded-circle {
+  border: 4px solid var(--purple-light);
+}
+
+/* قسم المهارات */
+#skills .skill-item {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+#skills .skill-item:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow);
+}
+
+/* البطاقات */
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  border-radius: 0.375rem;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 1rem 2rem var(--shadow-color) !important;
+}
+
+.card-title,
+.card-text {
+  color: var(--text-color);
+}
+
+.card-text {
+  opacity: 0.9;
+}
+
+.card .badge {
+  border: 1px solid transparent;
+}
+body.light-theme .card .badge {
+  border-color: rgba(0,0,0,0.1);
+}
+body.dark-theme .card .badge {
+  border-color: rgba(255,255,255,0.15);
+}
+
+.card-img-top {
+  object-fit: cover;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* مشغل الصوت */
+#portfolio .card audio {
+  width: 100%;
+  margin-top: 1rem;
+  border-radius: 5px;
+  border: 1px solid var(--audio-border);
+  background-color: var(--audio-bg);
+  filter: brightness(1.05);
+}
+body.dark-theme #portfolio .card audio {
+  filter: contrast(1.1) brightness(0.9);
+}
+
+/* النماذج */
+#contact .form-control {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+#contact .form-control::placeholder {
+  color: var(--text-color);
+  opacity: 0.6;
+}
+
+#contact .form-control:focus {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border-color: var(--link-color);
+  box-shadow: 0 0 0 0.25rem rgba(var(--purple-primary-rgb), 0.25);
+}
+
+/* تقييم النجوم */
+.rating {
+  display: inline-block;
+  unicode-bidi: bidi-override;
+  direction: rtl;
+  text-align: center;
+}
+.rating > input {
+  display: none;
+}
+.rating > label {
+  display: inline-block;
+  position: relative;
+  width: 1.1em;
+  cursor: pointer;
+  color: #ccc;
+  font-size: 2.5rem;
+  transition: color 0.2s ease, transform 0.1s ease;
+  margin: 0 2px;
+}
+.rating > label:hover,
+.rating > label:hover ~ label,
+.rating > input:checked ~ label {
+  color: #ffc107;
+}
+.rating > label:hover {
+  transform: scale(1.1);
+}
+
+/* التذييل */
+footer {
+  background-color: var(--footer-bg);
+  color: var(--footer-text);
+  padding: 2rem 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+footer .social-icons a {
+  color: var(--footer-text);
+  margin: 0 0.5rem;
+  font-size: 1.2rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+  display: inline-block;
+}
+
+footer .social-icons a:hover {
+  color: var(--link-hover-color);
+  transform: translateY(-3px);
+}
+
+/* تعديلات RTL/LTR */
+html[dir="ltr"] .me-auto { margin-right: auto !important; margin-left: 0 !important; }
+html[dir="ltr"] .ms-auto { margin-left: auto !important; margin-right: 0 !important; }
+html[dir="ltr"] .me-1 { margin-right: .25rem !important; margin-left: 0 !important; }
+html[dir="ltr"] .me-2 { margin-right: .5rem !important; margin-left: 0 !important; }
+html[dir="ltr"] .me-3 { margin-right: 1rem !important; margin-left: 0 !important; }
+html[dir="ltr"] .ms-1 { margin-left: .25rem !important; margin-right: 0 !important; }
+html[dir="ltr"] .ms-2 { margin-left: .5rem !important; margin-right: 0 !important; }
+html[dir="ltr"] .ms-3 { margin-left: 1rem !important; margin-right: 0 !important; }
+
+html[dir="rtl"] .me-auto { margin-left: auto !important; margin-right: 0 !important; }
+html[dir="rtl"] .ms-auto { margin-right: auto !important; margin-left: 0 !important; }
+html[dir="rtl"] .me-1 { margin-left: .25rem !important; margin-right: 0 !important; }
+html[dir="rtl"] .me-2 { margin-left: .5rem !important; margin-right: 0 !important; }
+html[dir="rtl"] .me-3 { margin-left: 1rem !important; margin-right: 0 !important; }
+html[dir="rtl"] .ms-1 { margin-right: .25rem !important; margin-left: 0 !important; }
+html[dir="rtl"] .ms-2 { margin-right: .5rem !important; margin-left: 0 !important; }
+html[dir="rtl"] .ms-3 { margin-right: 1rem !important; margin-left: 0 !important; }
+
+/* تايملاين الخبرات */
+.timeline {
+  position: relative;
+  padding: 20px 0;
+  list-style: none;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--timeline-line);
+  left: 50%;
+  margin-left: -2px;
+  border-radius: 2px;
+}
+
+.timeline-item {
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.timeline-icon {
+  width: 50px;
+  height: 50px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  margin-left: -25px;
+  background: var(--timeline-icon-bg);
+  border: 3px solid var(--timeline-icon-border);
+  border-radius: 50%;
+  text-align: center;
+  line-height: 44px;
+  color: white;
+  font-size: 1.4rem;
+  z-index: 1;
+  box-shadow: 0 0 0 4px var(--timeline-icon-border);
+}
+
+.timeline-content {
+  padding: 20px 30px;
+  background: var(--card-bg);
+  position: relative;
+  width: 45%;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.timeline-content .date {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* تايملاين للشاشات الصغيرة */
+@media (max-width: 767px) {
+  .timeline::before {
+    left: 25px;
+    right: auto;
+    margin-left: 0;
+  }
+  .timeline-icon {
+    left: 0;
+    right: auto;
+    margin-left: 0;
+  }
+  .timeline-content {
+    width: calc(100% - 70px);
+    float: right !important;
+    margin-left: 70px;
+    margin-right: 0;
+  }
+  .timeline-content::before,
+  .timeline-item.right .timeline-content::before {
+    left: -15px;
+    border-width: 8px 15px 8px 0;
+    border-color: transparent var(--border-color) transparent transparent;
+  }
+  .timeline-content::after,
+  .timeline-item.right .timeline-content::after {
+    left: -14px;
+    border-width: 7px 14px 7px 0;
+    border-color: transparent var(--card-bg) transparent transparent;
+  }
+  html[dir="rtl"] .timeline::before {
+    right: 25px;
+    left: auto;
+  }
+  html[dir="rtl"] .timeline-icon {
+    right: 0;
+    left: auto;
+  }
+  html[dir="rtl"] .timeline-content {
+    float: left !important;
+    margin-left: 0;
+    margin-right: 70px;
+  }
+  html[dir="rtl"] .timeline-content::before,
+  html[dir="rtl"] .timeline-item.right .timeline-content::before {
+    right: -15px;
+    border-width: 8px 0 8px 15px;
+    border-color: transparent transparent transparent var(--border-color);
+  }
+  html[dir="rtl"] .timeline-content::after,
+  html[dir="rtl"] .timeline-item.right .timeline-content::after {
+    right: -14px;
+    border-width: 7px 0 7px 14px;
+    border-color: transparent transparent transparent var(--card-bg);
+  }
+}
+
+/* تحسين تجاوب الحاوية على الشاشات الصغيرة */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+  .navbar-collapse {
+    text-align: center;
+  }
+}
+/* static/portfolio/css/style.css - أضف هذا في نهاية الملف */
+
+/* تأكد من أن الأقسام الرئيسية تتبع ألوان الثيم */
+#about,
+#certificates,
+#contact,
+#experience,
+#skills,
+#projects,
+#portfolio /* أضف أي قسم آخر يواجه المشكلة */
+{
+  background-color: var(--bg-color); /* استخدم لون خلفية الجسم الرئيسي */
+  color: var(--text-color); /* استخدم لون نص الجسم الرئيسي */
+}
+
+/* تأكد من أن العناوين والنصوص داخل هذه الأقسام تتبع لون النص الرئيسي للثيم */
+#about h2, #about h3, #about p,
+#certificates h2, #certificates h5, #certificates p, #certificates small,
+#contact h2, #contact label, #contact p,
+#experience h2, #experience h5, #experience p, #experience span.date,
+#skills h2, #skills h5,
+#projects h2,
+#portfolio h2
+{
+    color: var(--text-color); /* استخدم لون نص الجسم الرئيسي */
+}
+
+/* تأكد من أن نصوص البطاقات تتبع لون النص الرئيسي للثيم */
+/* (على الرغم من أن البطاقات لها خلفيتها الخاصة، يجب أن يكون النص متناسقًا) */
+.card, .card h1, .card h2, .card h3, .card h4, .card h5, .card h6, .card p, .card .card-title, .card .card-text, .card small {
+    color: var(--text-color);
+}
+/* إعادة التأكيد على خلفية البطاقة وحدودها */
+.card {
+    background-color: var(--card-bg); /* خلفية خاصة للبطاقات */
+    border: 1px solid var(--border-color);
+}
+
+/* تأكد من أن عناصر النموذج وخاصة الـ labels تتبع ألوان الثيم */
+#contact .form-label {
+   color: var(--text-color); /* لون نص النموذج يجب أن يتبع الثيم */
+}
+#contact .form-control {
+   color: var(--text-color);
+   background-color: var(--card-bg); /* خلفية حقل الإدخال قد تكون مثل البطاقة */
+   border-color: var(--border-color);
+}
+#contact .form-control::placeholder {
+  color: var(--text-color);
+  opacity: 0.6;
+}
+#contact .form-control:focus {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border-color: var(--link-color);
+  box-shadow: 0 0 0 0.25rem rgba(var(--purple-primary-rgb), 0.25); /* استخدام المتغير RGB هنا */
+}
+
+/* تأكد من أن نص رسالة حالة النموذج يتبع لون الثيم */
+#form-status {
+    color: var(--text-color);
+}
+
+/* تأكد من أن الروابط داخل قسم التواصل تتبع لون الرابط للثيم */
+#contact .text-center a {
+    color: var(--link-color);
+}
+#contact .text-center a:hover {
+    color: var(--link-hover-color);
+}
+/* Add this rule to style.css */
+.skills .skill .stars .fas.fa-star {
+  color: gold; /* Or use yellow or a specific hex code like #FFD700 */
+  /* You might need to adjust the selector if your HTML structure is different */
+}
+
+/* Make sure this rule comes after any general rules for .fas or .fa-star */
+/* Add this block AT THE END of your style.css file */
+
+/* --- Light Theme Specific Overrides --- */
+body.light-theme {
+  /* Use variables intended for light theme, with fallbacks matching :root */
+  --bg-color: var(--light-bg-color, #f8f9fa);
+  --text-color: var(--light-text-color, #212529);
+  --card-bg: var(--light-card-bg, #ffffff);
+  --purple-primary: var(--light-purple-primary, #6a1b9a);
+  --purple-light: #e9d8f6; /* Example, define if needed */
+  /* Add other light theme variables if you have them */
+
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* Ensure sections with specific backgrounds use light theme card background */
+body.light-theme #skills,
+body.light-theme #my-projects,
+body.light-theme #certificates,
+body.light-theme #contact,
+body.light-theme .custom-footer { /* Assuming footer uses card-bg */
+   background-color: var(--card-bg);
+}
+
+/* Ensure card text color is correct in light theme */
+body.light-theme .card,
+body.light-theme .section-content, /* e.g., About section */
+body.light-theme .timeline .timeline-content {
+  color: var(--text-color);
+}
+body.light-theme .card .text-muted,
+body.light-theme .timeline .text-muted {
+    color: #6c757d !important; /* Standard Bootstrap muted color for light theme */
+}
+
+
+/* General Icon color in light theme (adjust as needed) */
+/* Option 1: Match primary color */
+body.light-theme i.fas,
+body.light-theme i.fab,
+body.light-theme i.bi {
+   color: var(--purple-primary);
+}
+/* Option 2: Match text color (if Option 1 is too much purple) */
+/* body.light-theme i.fas,
+body.light-theme i.fab,
+body.light-theme i.bi {
+   color: var(--text-color);
+} */
+
+/* --- Specific Element Colors for Light Theme --- */
+
+/* Navbar */
+body.light-theme .navbar {
+    background-color: var(--card-bg); /* Ensure navbar background */
+}
+body.light-theme .navbar-brand,
+body.light-theme .navbar-brand i {
+  color: var(--purple-primary); /* Navbar brand color */
+}
+body.light-theme .nav-link {
+  color: var(--text-color); /* Default nav link color */
+}
+body.light-theme .nav-link:hover,
+body.light-theme .nav-link.active {
+  color: var(--purple-primary); /* Active/hover nav link color */
+}
+body.light-theme .navbar-toggler-icon {
+  /* Adjust filter if needed for visibility */
+  /* background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(var(--text-color-rgb), 0.75)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"); */
+}
+/* Theme toggle & language buttons */
+body.light-theme #theme-toggle,
+body.light-theme #languageDropdown {
+    color: var(--text-color);
+    border-color: #ced4da; /* Standard border color */
+}
+body.light-theme #theme-toggle:hover,
+body.light-theme #languageDropdown:hover {
+    background-color: #e9ecef;
+}
+
+
+/* Hero Section (text is already white, buttons handled by inline styles/bootstrap) */
+
+/* Skills Icons (handled by inline style/defaults, but ensure container text is right) */
+body.light-theme .skill-item h5 {
+    color: var(--text-color);
+}
+/* If skill icons *themselves* are wrong (despite inline color), override here */
+/* body.light-theme .skill-item i {
+    color: var(--purple-primary) !important; /* Force color if needed */
+/* } */
+
+/* Project Cards */
+body.light-theme .card-title {
+    color: var(--text-color);
+}
+
+/* Experience Timeline */
+body.light-theme .timeline::before {
+  background: #e9ecef; /* Lighter line for light theme */
+}
+body.light-theme .timeline .timeline-icon {
+  background: var(--purple-primary); /* Icon background */
+}
+body.light-theme .timeline .timeline-icon i {
+  color: #ffffff; /* Icon color inside the circle */
+}
+
+/* Certificates */
+/* Card styling should handle this */
+
+/* Podcast */
+/* Card styling should handle this */
+
+/* Contact Form */
+body.light-theme #contact label {
+    color: var(--text-color);
+}
+body.light-theme #contact .form-control {
+    background-color: #fff; /* Ensure form fields are white */
+    color: var(--text-color);
+    border: 1px solid #ced4da;
+}
+body.light-theme #contact .form-control::placeholder {
+    color: #6c757d;
+}
+body.light-theme .rating > label { /* Inactive rating star color */
+  color: #ccc;
+}
+/* Active star color is likely same for both themes (#ffc107 is already set) */
+
+/* Footer */
+body.light-theme .custom-footer {
+    color: var(--text-color);
+    background-color: var(--card-bg); /* Ensure footer background */
+}
+body.light-theme .custom-footer .social-links a i {
+    color: var(--text-color); /* Footer icon color */
+}
+body.light-theme .custom-footer .social-links a:hover i {
+    color: var(--purple-primary); /* Footer icon hover color */
+}
+
+/* Ensure AOS animations don't conflict with theme colors */
+[data-aos] {
+    transition-property: background-color, color, border-color, opacity, transform;
+}
